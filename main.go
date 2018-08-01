@@ -6,26 +6,33 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+type postStruct struct {
+	userID string
+	token  string
+	prefix string
+	space  bool
+}
+
 func main() {
 	// creates a chi router
-	//r := chi.NewRouter()
+	r := chi.NewRouter()
 
-	//r.Route("/{userID}", func(r chi.Router) {
+	r.Route("/{userID}", func(r chi.Router) {
 	// gets data for {userID}'s instance
 	//r.Get("/", getData)
 	// creates an instance for {userID}
-	//r.Post("/create", createContainer)
+	r.Post("/create", createContainer)
 	// updates {userID}'s instance
 	//r.Post("/update", updateContainer)
 	// updates the settings for {userID}'s instance. Settings sent in body
 	//.Put("/settings", updateSettings)
 	//})
-	createContainer("100")
 }
 
 func getData() {}
 
-func createContainer(userID string) {
+func createContainer(data postStruct) {
+	var userID = data.userID
 	endpoint := "unix:///var/run/docker.sock"
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
