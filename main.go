@@ -68,10 +68,15 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
-	_, err = containerExists(data.UserID)
-	if err != nil {
+	contains, err = containerExists(data.UserID)
+	if contains {
 		w.WriteHeader(409)
 		render.Render(w, r, res("Fuck you greedy scum. Only one container for you"))
+		return
+	}
+	if err != nil {
+		w.WriteHeader(500)
+		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
 	path := filepath.Join("./users", data.UserID)
