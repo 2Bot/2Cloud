@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
 
@@ -35,21 +36,19 @@ const endpoint = "unix:///var/run/docker.sock"
 
 func main() {
 	// creates a chi router
-	//r := chi.NewRouter()
+	r := chi.NewRouter()
 	fmt.Println("Server is running")
-	http.HandleFunc("/", createContainer)
+	r.Route("/{userID}", func(r chi.Router) {
+		// gets data for {userID}'s instance
+		//r.Get("/", getData)
+		// creates an instance for {userID}
+		r.Post("/create", createContainer)
+		// updates {userID}'s instance
+		//r.Post("/update", updateContainer)
+		// updates the settings for {userID}'s instance. Settings sent in body
+		//.Put("/settings", updateSettings)
+	})
 	http.ListenAndServe(":8080", nil)
-	//r.Route("/{userID}", func(r chi.Router) {
-	// gets data for {userID}'s instance
-	//r.Get("/", getData)
-	// creates an instance for {userID}
-	//r.Post("/create", createContainer)
-	// updates {userID}'s instance
-	//r.Post("/update", updateContainer)
-	// updates the settings for {userID}'s instance. Settings sent in body
-	//.Put("/settings", updateSettings)
-	//})
-	//})
 }
 
 func getData() {}
