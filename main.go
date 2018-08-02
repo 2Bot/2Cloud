@@ -27,6 +27,7 @@ func (e *response) Render(w http.ResponseWriter, r *http.Request) error {
 }
 
 func res(r string) render.Renderer {
+
 	return &response{Message: r}
 }
 
@@ -95,8 +96,6 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
-	render.Render(w, r, res("She's ready. 2B awaits"))
-	return
 }
 
 func containerExists(userID string) bool {
