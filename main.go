@@ -38,9 +38,9 @@ func main() {
 	// creates a chi router
 	r := chi.NewRouter()
 	fmt.Println("Server is running")
-	r.Route("/{userID}", func(r chi.Router) {
+	r.Route("/", func(r chi.Router) {
 		// gets data for {userID}'s instance
-		//r.Get("/", getData)
+		r.Get("/", getData)
 		// creates an instance for {userID}
 		r.Post("/create", createContainer)
 		// updates {userID}'s instance
@@ -48,10 +48,13 @@ func main() {
 		// updates the settings for {userID}'s instance. Settings sent in body
 		//.Put("/settings", updateSettings)
 	})
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", r)
 }
 
-func getData() {}
+func getData(w http.ResponseWriter, r *http.Request) {
+	render.Render(w, r, res("Heyyyyy 👀"))
+	return
+}
 
 func createContainer(w http.ResponseWriter, r *http.Request) {
 	var data postStruct
