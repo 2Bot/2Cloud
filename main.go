@@ -56,15 +56,15 @@ func getData() {}
 func createContainer(w http.ResponseWriter, r *http.Request) {
 	var data postStruct
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		w.WriteHeader(409)
-		render.Render(w, r, res("JSON shit the bed sorry"))
+		w.WriteHeader(500)
+		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
 
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
-		w.WriteHeader(409)
-		render.Render(w, r, res("Golang shit the best sorry"))
+		w.WriteHeader(500)
+		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
 
@@ -76,8 +76,8 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 	path := filepath.Join("./users", data.UserID)
 	err = os.MkdirAll(path, 0777)
 	if err != nil {
-		w.WriteHeader(409)
-		render.Render(w, r, res("Had an ol issue setting up your directory. Sorry"))
+		w.WriteHeader(500)
+		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
 
@@ -91,8 +91,8 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		w.WriteHeader(409)
-		render.Render(w, r, res("Could not create your container. Deepest apologies"))
+		w.WriteHeader(500)
+		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
 	render.Render(w, r, res("She's ready. 2B awaits"))
