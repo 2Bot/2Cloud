@@ -68,8 +68,8 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
-
-	if containerExists(data.UserID) {
+	_, err = containerExists(data.UserID)
+	if err != nil {
 		w.WriteHeader(409)
 		render.Render(w, r, res("Fuck you greedy scum. Only one container for you"))
 		return
