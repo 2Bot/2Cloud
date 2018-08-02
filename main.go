@@ -17,7 +17,7 @@ type postStruct struct {
 	Space  bool   `json:"space"`
 }
 
-const endpoint string = "unix:///var/run/docker.sock"
+const endpoint = "unix:///var/run/docker.sock"
 
 func main() {
 	// creates a chi router
@@ -41,26 +41,27 @@ func main() {
 func getData() {}
 
 func createContainer(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
 	var data postStruct
 	fmt.Println(data)
-	err := decoder.Decode(&data)
-	if err != nil {
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		panic(err)
 	}
-	userID := data.UserID
+
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
 		panic(err)
 	}
-	containerExists(userID)
-	path := filepath.Join("./users", userID)
+
+	containerExists(data.UserID)
+	path := filepath.Join("./users", data.UserID)
 	err = os.MkdirAll(path, 0777)
 	if err != nil {
 		panic(err)
 	}
+
 	_, err = client.CreateContainer(docker.CreateContainerOptions{
-		Name: userID,
+		Name: data.UserID,
 		Config: &docker.Config{
 			AttachStdout: true,
 			AttachStdin:  false,
