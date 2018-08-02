@@ -68,7 +68,7 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
 		return
 	}
-	contains, err = containerExists(data.UserID)
+	contains, err := containerExists(data.UserID)
 	if contains {
 		w.WriteHeader(409)
 		render.Render(w, r, res("Fuck you greedy scum. Only one container for you"))
