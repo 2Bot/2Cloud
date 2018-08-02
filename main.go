@@ -98,22 +98,22 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func containerExists(userID string) bool {
+func containerExists(userID string) (bool, error) {
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	containers, err := client.ListContainers(docker.ListContainersOptions{All: true})
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	if containers != nil {
 		for i := 0; i < len(containers); i++ {
 			if containers[i].Names[0] == "/"+userID {
-				return true
+				return true, err
 			}
 		}
 	}
-	return false
+	return false, err
 }
