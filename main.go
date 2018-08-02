@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/go-chi/render"
 )
 
 type postStruct struct {
@@ -15,6 +16,18 @@ type postStruct struct {
 	Token  string `json:"token"`
 	Prefix string `json:"prefix"`
 	Space  bool   `json:"space"`
+}
+
+type response struct {
+	Message string `json:"message"`
+}
+
+func (e *response) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+func res(r string) render.Renderer {
+	return &response{Message: r}
 }
 
 const endpoint = "unix:///var/run/docker.sock"
@@ -42,22 +55,30 @@ func getData() {}
 
 func createContainer(w http.ResponseWriter, r *http.Request) {
 	var data postStruct
-	fmt.Println(data)
-
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		panic(err)
+		w.WriteHeader(409)
+		render.Render(w, r, res("JSON shit the bed sorry"))
+		return
 	}
 
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(409)
+		render.Render(w, r, res("Golang shit the best sorry"))
+		return
 	}
 
-	containerExists(data.UserID)
+	if containerExists(data.UserID) {
+		w.WriteHeader(409)
+		render.Render(w, r, res("Fuck you greedy scum. Only one container for you"))
+		return
+	}
 	path := filepath.Join("./users", data.UserID)
 	err = os.MkdirAll(path, 0777)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(409)
+		render.Render(w, r, res("Had an ol issue setting up your directory. Sorry"))
+		return
 	}
 
 	_, err = client.CreateContainer(docker.CreateContainerOptions{
@@ -70,11 +91,15 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		w.WriteHeader(409)
+		render.Render(w, r, res("Could not create your container. Deepest apologies"))
+		return
 	}
+	render.Render(w, r, res("She's ready. 2B awaits"))
+	return
 }
 
-func containerExists(userID string) {
+func containerExists(userID string) bool {
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
 		panic(err)
@@ -87,8 +112,9 @@ func containerExists(userID string) {
 	if containers != nil {
 		for i := 0; i < len(containers); i++ {
 			if containers[i].Names[0] == "/"+userID {
-				return
+				return true
 			}
 		}
 	}
+	return false
 }
