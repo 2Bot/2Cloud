@@ -25,6 +25,7 @@ type getStruct struct {
 
 type response struct {
 	Message string `json:"message"`
+	Yes     string `json:"err"`
 }
 
 type getResponse struct {
@@ -36,8 +37,8 @@ func (e *response) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func res(r string) render.Renderer {
-	return &response{Message: r}
+func res(r string, err error) render.Renderer {
+	return &response{Message: r, Yes: err.Error()}
 }
 
 func (e *getResponse) Render(w http.ResponseWriter, r *http.Request) error {
@@ -74,13 +75,13 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	var data getStruct
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error creating a decoder :(", err))
 		return
 	}
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error creating an endpoint :(", err))
 		return
 	}
 	contains, err := containerExists(*client, data.UserID)
@@ -88,7 +89,7 @@ func getData(w http.ResponseWriter, r *http.Request) {
 		stats, err := client.InspectContainer(data.UserID)
 		if err != nil {
 			w.WriteHeader(500)
-			render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+			render.Render(w, r, res("There was an error inspecting your container :(", err))
 			return
 		}
 
@@ -97,11 +98,11 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error trying to find your container :(", err))
 		return
 	}
 	w.WriteHeader(400)
-	render.Render(w, r, res("Doesn't look like you have a container. Sorry :("))
+	render.Render(w, r, res("Doesn't look like you have a container. Sorry :(", err))
 	return
 }
 
@@ -109,47 +110,50 @@ func createContainer(w http.ResponseWriter, r *http.Request) {
 	var data postStruct
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error getting creating a new decoder :(", err))
 		return
 	}
 
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error creating an endpoint :(", err))
 		return
 	}
 	contains, err := containerExists(*client, data.UserID)
 	if contains {
 		w.WriteHeader(409)
-		render.Render(w, r, res("Fuck you greedy scum. Only one container for you"))
+		render.Render(w, r, res("Fuck you greedy scum. Only one container for you", err))
 		return
 	}
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error checking if you are greedy :(", err))
 		return
 	}
 	path := filepath.Join("./users", data.UserID)
 	err = os.MkdirAll(path, 0777)
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error creating your directory", err))
 		return
 	}
 
 	_, err = client.CreateContainer(docker.CreateContainerOptions{
 		Name: data.UserID,
 		Config: &docker.Config{
-			AttachStdout: true,
+			AttachStdout: false,
 			AttachStdin:  false,
-			Cmd:          []string{"/bin/bash"},
-			Image:        "library/hello-world",
+			Image:        "2bot2go:3.0",
+			Volumes: map[string]struct{}{
+				"../emoji:/go/emoji":                                  {},
+				"./users/{UserID}/config.toml:/go/config/config.toml": {},
+			},
 		},
 	})
 	if err != nil {
 		w.WriteHeader(500)
-		render.Render(w, r, res("Oopsiedoopsie our server had a little fuckywucky"))
+		render.Render(w, r, res("There was an error creating your container :(", err))
 		return
 	}
 }
